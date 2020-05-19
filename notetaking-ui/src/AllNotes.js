@@ -1,40 +1,9 @@
 import React, {useState} from "react";
-import {Link} from "react-router-dom";
-import gql from "graphql-tag";
 import {useQuery, useMutation} from "@apollo/react-hooks";
-import {notify} from "react-notify-toast";
-
-const NEW_NOTE = gql`
-  mutation createNote($title: String!, $content: String!) {
-    createNote(input: { title: $title, content: $content }) {
-      _id
-      title
-      content
-      date
-    }
-  }
-`;
-const NOTES_QUERY = gql`
-  {
-    allNotes {
-      title
-      content
-      _id
-      date
-    }
-  }
-`;
-const DELETE_NOTE_QUERY = gql`
-  mutation deleteNote($_id: ID!) {
-    deleteNote(_id: $_id) {
-      title
-      content
-      _id
-      date
-    }
-  }
-`;
-
+import {DELETE_NOTE_QUERY, NEW_NOTE, NOTES_QUERY} from "./graphQLServer";
+import {TodoItem} from './componets/TodoItem'
+import {InputUi} from './componets/InputUI'
+import {TextAreaUi} from "./componets/TextAreaUi";
 
 const AllNotes = () => {
     const {loading, error, data} = useQuery(NOTES_QUERY);
@@ -72,8 +41,17 @@ const AllNotes = () => {
         }
     });
 
+    function handleValue(value) {
+        setTitle(value)
+    }
+
+    function handleContent(value) {
+        setContent(value)
+    }
+
     if (loading) return "Loading...";
     if (error) return `Error! ${error.message}`;
+
 
     return (
         <div className="container m-t-20">
@@ -91,74 +69,23 @@ const AllNotes = () => {
                         });
                     }}
                 >
-                    <div className="field">
-                        <label className="label">TODO Title</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                name="title"
-                                type="text"
-                                placeholder="Note Title"
-                                value={title}
-                                onChange={e => setTitle(e.target.value)}
-                            />
-                        </div>
-                    </div>
+                    <InputUi title={title} handleValue={handleValue}/>
 
-                    <div className="field">
-                        <label className="label">TODO Content</label>
-                        <div className="control">
-                            <textarea
-                                className="textarea"
-                                name="content"
-                                rows="10"
-                                placeholder="TODO Content here..."
-                                value={content}
-                                onChange={e => setContent(e.target.value)}
-                            />
-                        </div>
-                    </div>
+                    <TextAreaUi content={content} handleContent={handleContent}/>
 
-                    <div className="field">
-                        <div className="control">
-                            <button className="button is-link">Submit</button>
-                        </div>
+                    <div className="control field">
+                        <button className="button is-link">Submit</button>
                     </div>
                 </form>
             </div>
             <div>
                 <h1 className="page-title">All TODO</h1>
                 <div className="columns is-multiline">
-                    {data.allNotes.map(note => (
-                        <div className="column is-one-third" key={note._id}>
-                            <div className="card">
-                                <header className="card-header">
-                                    <p className="card-header-title">{note.title}</p>
-                                </header>
-                                <div className="card-content">
-                                    <div className="content">
-                                        {note.content}
-                                        <br/>
-                                    </div>
-                                </div>
-                                <footer className="card-footer">
-                                    <Link to={`note/${note._id}`} className="card-footer-item">
-                                        Edit
-                                    </Link>
-                                    <button
-                                        onClick={e => {
-                                            e.preventDefault();
-                                            deleteNote({variables: {_id: note._id}});
-                                            notify.show("Note was deleted successfully", "success");
-                                        }}
-                                        className="card-footer-item"
-                                    >
-                                        Delete
-                                    </button>
-                                </footer>
-                            </div>
-                        </div>
-                    ))}
+                    {data.allNotes.map(todo => {
+                        return (
+                            <TodoItem todos={todo} key={todo._id} deleteNote={deleteNote}/>
+                        )
+                    })}
                 </div>
             </div>
         </div>

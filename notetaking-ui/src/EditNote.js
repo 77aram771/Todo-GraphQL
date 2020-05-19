@@ -1,28 +1,9 @@
 import React, {useState} from "react";
 import {useQuery, useMutation} from "@apollo/react-hooks";
 import {notify} from "react-notify-toast";
-import gql from "graphql-tag";
-
-const NOTE_QUERY = gql`
-  query getNote($_id: ID!) {
-    getNote(_id: $_id) {
-      _id
-      title
-      content
-      date
-    }
-  }
-`;
-
-const UPDATE_NOTE = gql`
-  mutation updateNote($_id: ID!, $title: String, $content: String) {
-    updateNote(_id: $_id, input: { title: $title, content: $content }) {
-      _id
-      title
-      content
-    }
-  }
-`;
+import {InputUi} from "./componets/InputUI";
+import {TextAreaUi} from "./componets/TextAreaUi";
+import {NOTE_QUERY, UPDATE_NOTE} from "./graphQLServer";
 
 const EditNote = ({match}) => {
     const [title, setTitle] = useState("");
@@ -33,6 +14,14 @@ const EditNote = ({match}) => {
         }
     });
     const [updateNote] = useMutation(UPDATE_NOTE);
+
+    function handleValue(value) {
+        setTitle(value)
+    }
+
+    function handleContent(value) {
+        setContent(value)
+    }
 
     if (loading) return <div>Fetching note</div>;
     if (error) return <div>Error fetching note</div>;
@@ -57,38 +46,12 @@ const EditNote = ({match}) => {
                         notify.show("Note was edited successfully", "success");
                     }}
                 >
-                    <div className="field">
-                        <label className="label">Note Title</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="text"
-                                name="title"
-                                placeholder="Note Title"
-                                defaultValue={note.getNote.title}
-                                onChange={e => setTitle(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div className="field">
-                        <label className="label">Note Content</label>
-                        <div className="control">
-                            <textarea
-                                className="textarea"
-                                rows="10"
-                                name="content"
-                                placeholder="Note Content here..."
-                                defaultValue={note.getNote.content}
-                                onChange={e => setContent(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div className="field">
-                        <div className="control">
-                            <button className="button is-link">Submit</button>
-                        </div>
+                    <InputUi title={title} handleValue={handleValue}/>
+
+                    <TextAreaUi content={content} handleContent={handleContent}/>
+
+                    <div className="control field">
+                        <button className="button is-link">Submit</button>
                     </div>
                 </form>
             </div>

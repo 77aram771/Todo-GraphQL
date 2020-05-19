@@ -1,5 +1,5 @@
-import { makeExecutableSchema } from "graphql-tools";
-import { resolvers } from "./resolvers";
+import {makeExecutableSchema} from "graphql-tools";
+import {resolvers} from "../resolvers";
 
 const typeDefs = `
  type Note {
@@ -35,8 +35,8 @@ const typeDefs = `
 `;
 
 const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers
+    typeDefs,
+    resolvers
 });
 
 export default schema;
